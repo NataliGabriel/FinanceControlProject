@@ -1,0 +1,148 @@
+﻿@page "/dashboard"
+@inject FinanceControl.Data.AuthenticationService authService
+@inject NavigationManager navigationManager
+@inject FinanceControl.Data.FinanceService expenseService
+@implements IDisposable
+@if (authService.IsAuthenticated)
+{
+    <select id="selectMonth" @onchange="OnSelectChange">
+        <option value="1">2023</option>
+        <option value="2">2022</option>
+        <option value="3">2021</option>
+        <option value="4">2020</option>
+    </select>
+
+    @if (chartData != null && chartData.Any())
+    {
+
+        <RadzenChart>
+            <RadzenLineSeries Smooth="false" Data="@chartData" CategoryProperty="MonthYear" Title="Gastos" ValueProperty="TotalAmount" LineType="LineType.Dashed">
+                <RadzenMarkers MarkerType="MarkerType.Square" />
+                <RadzenSeriesDataLabels Visible="false" />
+            </RadzenLineSeries>
+            <RadzenLineSeries Smooth="false" Data="@incomeData" CategoryProperty="MonthYear" Title="Ganhos" ValueProperty="TotalAmount">
+                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                <RadzenSeriesDataLabels Visible="false" />
+            </RadzenLineSeries>
+            <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+            <RadzenValueAxis Formatter="@FormatAsBRL">                                                  
+                <RadzenGridLines Visible="true" />
+                <RadzenAxisTitle Text="Despesa" />
+            </RadzenValueAxis>
+        </RadzenChart>
+
+    }
+    else
+    {
+        <p> Nenhuma Despesa Cadastrada</p>
+    }
+}
+else
+{
+    GoToLogin();
+}
+
+@code {
+    string ano = DateTime.Now.Year.ToString();
+    List<string> Anos = new List<string> { "2023", "2022", "2021" };
+    private List<FinanceControl.Data.Finance> finances;
+    List<ChartData> chartData;
+    List<IncomeData> incomeData;
+    private async Task OnSelectChange(ChangeEventArgs e)
+    {
+        var finances = await expenseService.GetFinances();
+
+        chartData = CalculateTotalExpensesByMonth(finances, Convert.ToInt16(e.Value)).OrderBy(x =>
+        {
+            var monthYear = x.MonthYear.Split(' ');
+            var monthName = monthYear[0]; // Obtém o nome do mês
+            var year = int.Parse(monthYear[1]); // Obtém o ano
+
+            var monthNumber = DateTime.ParseExact(monthName, "MMMM", System.Globalization.CultureInfo.CurrentCulture).Month;
+            return year * 100 + monthNumber; // Multiplicando o ano por 100 para ter uma ordem correta
+        }).ToList();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var expenses = await expenseService.GetFinances();
+
+        chartData = CalculateTotalExpensesByMonth(expenses).OrderBy(x =>
+        {
+            var monthYear = x.MonthYear.Split(' ');
+            var monthName = monthYear[0]; // Obtém o nome do mês
+            var year = int.Parse(monthYear[1]); // Obtém o ano
+
+            var monthNumber = DateTime.ParseExact(monthName, "MMMM", System.Globalization.CultureInfo.CurrentCulture).Month;
+            return year * 100 + monthNumber; // Multiplicando o ano por 100 para ter uma ordem correta
+        }).ToList();
+        incomeData = CalculateTotalIncomeByMonth(expenses).OrderBy(x =>
+    {
+        var monthYear = x.MonthYear.Split(' ');
+        var monthName = monthYear[0]; // Obtém o nome do mês
+        var year = int.Parse(monthYear[1]); // Obtém o ano
+
+        var monthNumber = DateTime.ParseExact(monthName, "MMMM", System.Globalization.CultureInfo.CurrentCulture).Month;
+        return year * 100 + monthNumber; // Multiplicando o ano por 100 para ter uma ordem correta
+    }).ToList();
+    }
+
+    List<ChartData> CalculateTotalExpensesByMonth(List<FinanceControl.Data.Finance> finances, int year = 2023)
+    {
+        var totals = finances
+            .Where(e => e.Date.Year == year)
+            .Where(e => e.Category == "Despesa")
+            .GroupBy(e => new { e.Date.Year, e.Date.Month })
+            .Select(g => new ChartData
+                {
+                    MonthYear = $"{System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key.Month)} {g.Key.Year}",
+                    TotalAmount = g.Sum(e => e.Amount)
+                }).ToList();
+
+        return totals;
+    }
+    List<IncomeData> CalculateTotalIncomeByMonth(List<FinanceControl.Data.Finance> finances, int year = 2023)
+    {
+        var totals = finances
+            .Where(e => e.Date.Year == year)
+            .Where(e => e.Category != "Despesa")
+            .GroupBy(e => new { e.Date.Year, e.Date.Month })
+            .Select(g => new IncomeData
+                {
+                    MonthYear = $"{System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key.Month)} {g.Key.Year}",
+                    TotalAmount = g.Sum(e => e.Amount)
+                }).ToList();
+
+        return totals;
+    }
+    string FormatAsBRL(object value)
+    {
+        return ((double)value).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("pt-BR"));
+    }
+    string FormatAsMonth(object value)
+    {
+        return Convert.ToDateTime(value).ToString("MMM");
+    }
+
+
+    private void Logout() => navigationManager.NavigateTo("/");
+
+    public void Dispose()
+    {
+        // Realiza ações de limpeza quando a página é descartada
+    }
+    public class ChartData
+    {
+        public string MonthYear { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
+
+    public class IncomeData
+    {
+        public string MonthYear { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
+    private void GoToLogin()
+    {
+        navigationManager.NavigateTo($"/");
+    }
+}

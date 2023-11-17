@@ -1,0 +1,65 @@
+﻿@page "/editfinance"
+@inject FinanceControl.Data.FinanceService expenseService
+@inject NavigationManager navigationManager
+
+<h3>Editar Despesa</h3>
+
+@if (expense != null)
+{
+    <div class="form-container">
+        <div class="form-group">
+            <label for="expenseName">Nome da Despesa:</label>
+            <input type="text" id="expenseName" class="form-control" @bind="expense.Name" />
+        </div>
+
+        <div class="form-group">
+            <label for="expenseAmount">Valor:</label>
+            <input type="number" id="expenseAmount" class="form-control" @bind="expense.Amount" />
+        </div>
+
+        <div class="form-group">
+            <label for="expenseCategory">Categoria:</label>
+            <select id="expenseCategory" @bind="expense.Category">
+                <option value="Despesa">Despesa</option>
+                <option value="Ganho">Ganho</option>
+            </select>
+        </div>
+
+        <button class="btn-edit" @onclick="UpdateExpense">Salvar</button>
+    </div>
+}
+else
+{
+    <p>Despesa não encontrada para edição.</p>
+}
+
+@code {
+    private FinanceControl.Data.Finance expense;
+
+    private int financeID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new Uri(navigationManager.Uri).Query;
+        var queryParams = System.Web.HttpUtility.ParseQueryString(query);
+
+        if (queryParams.AllKeys.Contains("financeID"))
+        {
+            int.TryParse(queryParams["financeID"], out financeID);
+        }
+        // Carregar os dados da despesa com base no ID fornecido
+        expense = await expenseService.GetFinanceById(financeID);
+    }
+
+    private async Task UpdateExpense()
+    {
+        if (expense != null)
+        {
+            // Chama o serviço para atualizar a despesa
+            await expenseService.UpdateFinance(expense);
+
+            // Redireciona de volta para a página principal após editar a despesa
+            navigationManager.NavigateTo("/finance");
+        }
+    }
+}

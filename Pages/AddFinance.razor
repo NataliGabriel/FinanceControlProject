@@ -1,0 +1,64 @@
+﻿@page "/addfinance"
+@inject NavigationManager navigationManager
+@inject FinanceControl.Data.FinanceService service
+
+<h3>Adicionar Despesa</h3>
+
+<div class="form-container">
+    <div class="form-group">
+        <label for="expenseName">Nome da Despesa:</label>
+        <input type="text" id="expenseName" class="form-control" @bind="expenseName" />
+    </div>
+
+    <div class="form-group">
+        <label for="expenseAmount">Valor:</label>
+        <input type="number" id="expenseAmount" class="form-control" @bind="expenseAmount" />
+    </div>
+
+    <div class="form-group">
+        <label for="expenseCategory">Categoria:</label>
+        <RadzenDropDown @bind-Value=@expenseCategory Data=@category Style="width: 100%; max-width: 400px;" />
+    </div>
+
+    <button class="btn-add" @onclick="Add">Adicionar Despesa</button>
+</div>
+
+@code {
+    private string expenseName;
+    private decimal expenseAmount;
+    private string expenseCategory;
+    private int selectedMonth;
+    private int selectedYear;
+    private string valor = "Ganho";
+
+    private List<string> category = new List<string>() { "Despesa", "Ganho" };
+
+    protected override void OnInitialized()
+    {
+        var query = new Uri(navigationManager.Uri).Query;
+        var queryParams = System.Web.HttpUtility.ParseQueryString(query);
+
+        if (queryParams.AllKeys.Contains("month") && queryParams.AllKeys.Contains("year"))
+        {
+            int.TryParse(queryParams["month"], out selectedMonth);
+            int.TryParse(queryParams["year"], out selectedYear);
+        }
+    }
+    private void Add()
+    {
+        // Cria um objeto Expense com os dados do formulário
+        FinanceControl.Data.Finance newFinance = new FinanceControl.Data.Finance
+            {
+                Name = expenseName,
+                Amount = expenseAmount,
+                Category = expenseCategory,
+                Date = new DateTime(selectedYear, selectedMonth, 1)
+            };
+
+        // Chama o serviço para adicionar a despesa
+        service.AddFinance(newFinance);
+
+        // Redireciona de volta para a página principal após adicionar a despesa
+        navigationManager.NavigateTo("/finance");
+    }
+}
