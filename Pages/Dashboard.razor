@@ -89,13 +89,13 @@ else
     List<ChartData> CalculateTotalExpensesByMonth(List<FinanceControl.Data.Finance> finances, int year = 2023)
     {
         var totals = finances
-            .Where(e => e.Date.Year == year)
-            .Where(e => e.Category == "Despesa")
-            .GroupBy(e => new { e.Date.Year, e.Date.Month })
+            .Where(e => e.date.Year == year)
+            .Where(e => e.category == "Despesa")
+            .GroupBy(e => new { e.date.Year, e.date.Month })
             .Select(g => new ChartData
                 {
                     MonthYear = $"{System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key.Month)} {g.Key.Year}",
-                    TotalAmount = g.Sum(e => e.Amount)
+                    TotalAmount = g.Sum(e => e.amount)
                 }).ToList();
 
         return totals;
@@ -103,13 +103,13 @@ else
     List<IncomeData> CalculateTotalIncomeByMonth(List<FinanceControl.Data.Finance> finances, int year = 2023)
     {
         var totals = finances
-            .Where(e => e.Date.Year == year)
-            .Where(e => e.Category != "Despesa")
-            .GroupBy(e => new { e.Date.Year, e.Date.Month })
+            .Where(e => e.date.Year == year)
+            .Where(e => e.category != "Despesa")
+            .GroupBy(e => new { e.date.Year, e.date.Month })
             .Select(g => new IncomeData
                 {
                     MonthYear = $"{System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key.Month)} {g.Key.Year}",
-                    TotalAmount = g.Sum(e => e.Amount)
+                    TotalAmount = g.Sum(e => e.amount)
                 }).ToList();
 
         return totals;

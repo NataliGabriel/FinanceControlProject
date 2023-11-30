@@ -1,66 +1,117 @@
-﻿namespace FinanceControl.Data
+﻿using System.Net;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
+
+namespace FinanceControl.Data
 {
     public class FinanceService
     {
-        private List<Finance> Finances = new List<Finance>(); // Simulação de banco de dados
+        private List<Finance> Finances = new();
+        private readonly Authentication user;
+        public HttpClient client = new();
 
-        public Task<List<Finance>> GetFinances()
+        private readonly AuthenticationService _authenticationService;
+
+        public FinanceService(AuthenticationService authenticationService)
         {
-            // Retorna todas as despesas existentes (simulação)
-            return Task.FromResult(Finances);
+            _authenticationService = authenticationService;
         }
 
-        public void AddFinance(Finance Finance)
+        public async Task<List<Finance>> GetFinances()
         {
-            // Simulação de ID único para a despesa
-            Finance.Id = Finances.Count + 1;
+            var response =
+                await client.GetAsync(
+                    @$"https://localhost:7289/api/Finance/ListFinances?idUser={_authenticationService._auth.id}");
 
-            // Adiciona a despesa à lista (simulação de banco de dados)
-            Finances.Add(Finance);
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = response.Content.ReadAsStringAsync().Result;
+                return JsonSerializer.Deserialize<List<Finance>>(jsonResponse);
+            }
+
+            return null;
         }
 
-        public Task<List<Finance>> FilterByMonthAndYear(int month, int year)
-        {
-            // Filtrar as despesas com base no mês e ano fornecidos
-            var filteredFinances = Finances.Where(Finance =>
-                Finance.Date.Month == month && Finance.Date.Year == year).ToList();
 
-            return Task.FromResult(filteredFinances);
+        public async Task AddFinance(Finance finance)
+        {
+            finance.userId = _authenticationService._auth.id;
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7289/api/Finance");
+            request.Content = new StringContent(JsonSerializer.Serialize(finance), null, "application/json");
+
+            await client.SendAsync(request);
         }
+
+        public async Task<int> RetornaId()
+        {
+            var response = await client.GetAsync(
+                @$"https://localhost:7289/api/Finance/FinanceID");
+            return Convert.ToInt32(response.Content.ReadAsStringAsync().Result) + 1;
+        }
+
+        public async Task<List<Finance>> FilterByMonthAndYear(int month, int year)
+        {
+            try
+            {
+                var response =
+                    await client.GetAsync(
+                        @$"https://localhost:7289/api/Finance/ListFinancesByMonth?month={month}&year={year}&id={_authenticationService._auth.id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = response.Content.ReadAsStringAsync().Result;
+                    var financeResponse = JsonSerializer.Deserialize<List<Finance>>(jsonResponse);
+
+                    return financeResponse;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public async Task<Finance> GetFinanceById(int id)
         {
-            // Simula uma busca por ID na lista de despesas
-            return await Task.FromResult(Finances.FirstOrDefault(e => e.Id == id));
+            var response =
+                await client.GetAsync(
+                    @$"https://localhost:7289/api/Finance/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = response.Content.ReadAsStringAsync().Result;
+                var financeResponse = JsonSerializer.Deserialize<Finance>(jsonResponse);
+
+                return financeResponse;
+            }
+
+            return null;
         }
+
         public async Task UpdateFinance(Finance updatedFinance)
         {
             try
             {
-                var FinanceToUpdate = Finances.FirstOrDefault(e => e.Id == updatedFinance.Id);
+                updatedFinance.userId = _authenticationService._auth.id;
+                var request = new HttpRequestMessage(HttpMethod.Patch, $"https://localhost:7289/api/Finance/{updatedFinance.id}");
+                request.Content = new StringContent(JsonSerializer.Serialize(updatedFinance), null, "application/json");
 
-                if (FinanceToUpdate != null)
-                {
-                    FinanceToUpdate.Name = updatedFinance.Name;
-                    FinanceToUpdate.Amount = updatedFinance.Amount;
-                    FinanceToUpdate.Category = updatedFinance.Category;
-
-                    Console.WriteLine($"Despesa atualizada: {updatedFinance.Id}");
-                }
-                else
-                {
-                    throw new KeyNotFoundException($"Despesa com ID {updatedFinance.Id} não encontrada.");
-                }
+                await client.SendAsync(request);
             }
-            catch (Exception ex) { }
-        }
-        public async Task DeleteFinance(Finance deletedFinance)
-        {
-           var expenseToRemove = Finances.FirstOrDefault(e => e.Id == deletedFinance.Id);
-            if (expenseToRemove != null)
+            catch (Exception ex)
             {
-                Finances.Remove(expenseToRemove);
             }
         }
 
+        public async Task DeleteFinance(int deletedFinance)
+        {
+            var response =
+                await client.DeleteAsync(
+                    @$"https://localhost:7289/api/Finance/{deletedFinance}");
+
+            var a = response.IsSuccessStatusCode;
+        }
     }
 }

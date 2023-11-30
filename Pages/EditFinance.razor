@@ -8,24 +8,24 @@
 {
     <div class="form-container">
         <div class="form-group">
-            <label for="expenseName">Nome da Despesa:</label>
-            <input type="text" id="expenseName" class="form-control" @bind="expense.Name" />
+            <label for="expenseName">Finance Name:</label>
+            <input type="text" id="expenseName" class="form-control" @bind="expense.name" />
         </div>
 
         <div class="form-group">
-            <label for="expenseAmount">Valor:</label>
-            <input type="number" id="expenseAmount" class="form-control" @bind="expense.Amount" />
+            <label for="expenseAmount">Value:</label>
+            <input type="number" id="expenseAmount" class="form-control" @bind="expense._amount" />
         </div>
 
         <div class="form-group">
-            <label for="expenseCategory">Categoria:</label>
-            <select id="expenseCategory" @bind="expense.Category">
-                <option value="Despesa">Despesa</option>
-                <option value="Ganho">Ganho</option>
+            <label for="expenseCategory">Categorie:</label>
+            <select id="expenseCategory" @bind="expense.category">
+                <option value="Despesa">Expense</option>
+                <option value="Ganho">Earn</option>
             </select>
         </div>
 
-        <button class="btn-edit" @onclick="UpdateExpense">Salvar</button>
+        <button class="btn-edit" @onclick="UpdateExpense">Save</button>
     </div>
 }
 else
@@ -47,7 +47,6 @@ else
         {
             int.TryParse(queryParams["financeID"], out financeID);
         }
-        // Carregar os dados da despesa com base no ID fornecido
         expense = await expenseService.GetFinanceById(financeID);
     }
 
@@ -55,10 +54,8 @@ else
     {
         if (expense != null)
         {
-            // Chama o serviço para atualizar a despesa
             await expenseService.UpdateFinance(expense);
 
-            // Redireciona de volta para a página principal após editar a despesa
             navigationManager.NavigateTo("/finance");
         }
     }

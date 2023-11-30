@@ -1,8 +1,10 @@
 ﻿@page "/finance"
+@using static FinanceControl.Data.Authentication
+@using FinanceControl.Data
 @inject NavigationManager navigationManager
 @inject FinanceControl.Data.FinanceService expenseService
 @inject FinanceControl.Data.AuthenticationService authService
-
+@inject Authentication _authModel
 <style>
     .filter-container {
         display: flex;
@@ -80,9 +82,7 @@
 <!-- Restante do código da página ExpenseList.razor -->
 @if (authService.IsAuthenticated)
 {
-
-
-    <h3>Lista de Finanças</h3>
+    <h3>Finance List</h3>
 
     <div class="filter-container">
         <label for="selectMonth">Mês:</label>
@@ -102,47 +102,45 @@
 
         </select>
 
-        <label for="selectYear">Ano:</label>
+        <label for="selectYear">Year:</label>
         <select id="selectYear" @bind="selectedYear">
             <option value="2023">2023</option>
             <!-- Adicione opções para outros anos -->
         </select>
 
-        <button class="btn-filter" @onclick="FilterExpenses">Filtrar</button>
+        <button class="btn-filter" @onclick="FilterExpenses">Filter</button>
     </div>
     <div class="expense-controls">
-        <button class="btn-new-expense" @onclick="GoToAddExpense">Novos Dados</button>
+        <button class="btn-new-expense" @onclick="GoToAddExpense">New Data</button>
     </div>
 
 
     @if (finances != null && finances.Any())
     {
-
         <table class="expense-table">
             <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Valor</th>
-                    <th>Categoria</th>
-                    <th>Ações</th>
-                </tr>
+            <tr>
+                <th>Nome</th>
+                <th>Valor</th>
+                <th>Categoria</th>
+                <th>Ações</th>
+            </tr>
             </thead>
             <tbody>
-                @foreach (var expense in finances)
-                {
-                    <tr>
-                        <td>@expense.Name</td>
-                        <td class="@((expense.Category == "Gasto") ? "text-red" : "text-green")">@expense.Amount.ToString("C")</td>
-                        <td>@expense.Category</td>
-                        <td>
-                            <button @onclick="() => EditFinance(expense.Id)">Editar</button>
-                            <button @onclick="() => DeleteFinance(expense.Id)">Excluir</button>
-                        </td>
-                    </tr>
-                }
+            @foreach (var expense in finances)
+            {
+                <tr>
+                    <td>@expense.name</td>
+                    <td class="@((expense.category == "Gasto") ? "text-red" : "text-green")">@expense.amount.ToString("C")</td>
+                    <td>@expense.category</td>
+                    <td>
+                        <button @onclick="() => EditFinance(expense.id)">Editar</button>
+                        <button @onclick="() => DeleteFinance(expense.id)">Excluir</button>
+                    </td>
+                </tr>
+            }
             </tbody>
         </table>
-
     }
     else
     {
@@ -158,6 +156,8 @@ else
     private List<FinanceControl.Data.Finance> finances;
     private int selectedMonth = DateTime.Now.Month;
     private int selectedYear = DateTime.Now.Year;
+    private int userId;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadExpenses();
@@ -175,15 +175,18 @@ else
 
     private async Task DeleteFinance(int expenseId)
     {
-        FinanceControl.Data.Finance expenseToRemove = finances.FirstOrDefault(e => e.Id == expenseId);
 
-        await expenseService.DeleteFinance(expenseToRemove);
+
+        await expenseService.DeleteFinance(expenseId);
+
         await LoadExpenses();
     }
+
     private void GoToAddExpense()
     {
         navigationManager.NavigateTo($"/addfinance?month={selectedMonth}&year={selectedYear}");
     }
+
     private async Task FilterExpenses()
     {
         finances = await expenseService.FilterByMonthAndYear(selectedMonth, selectedYear);
@@ -192,4 +195,5 @@ else
     {
         navigationManager.NavigateTo($"/");
     }
+
 }
