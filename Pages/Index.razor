@@ -15,7 +15,11 @@
     </div>
 
     <button class="btn-login" @onclick="Login">Login</button>
-    <label @onclick="Cadastrar" style="cursor:pointer; color: blue; text-decoration: underline;">Register</label>
+    <div>
+        <label @onclick="Cadastrar" style="cursor:pointer; color: blue; text-decoration: underline; display: inline-block;">Register</label>
+        <label @onclick="ForgotPassword" style="cursor:pointer; color: blue; text-decoration: underline; display: inline-block; margin-left: 110px;">Forgot Password</label>
+    </div>
+
     @if (errorMessage != null)
     {
         <p class="error-message">@errorMessage</p>
@@ -47,6 +51,10 @@
     private async Task Cadastrar()
     {
         navigationManager.NavigateTo($"/register");
+    }
+    private async Task ForgotPassword()
+    {
+        navigationManager.NavigateTo($"/forgotPassword");
     }
 
 }

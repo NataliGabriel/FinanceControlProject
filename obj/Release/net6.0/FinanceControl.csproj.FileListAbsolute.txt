@@ -1,0 +1,7 @@
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.csproj.AssemblyReference.cache
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.AssemblyInfoInputs.cache
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.AssemblyInfo.cs
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.csproj.CoreCompileInputs.cache
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\DEV-NATALI\source\repos\FinanceControl\FinanceControl\obj\Release\net6.0\FinanceControl.sourcelink.json

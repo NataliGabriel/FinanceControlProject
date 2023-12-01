@@ -165,7 +165,9 @@ else
 
     private async Task LoadExpenses()
     {
+        try{
         finances = await expenseService.FilterByMonthAndYear(selectedMonth, selectedYear);
+        }catch(Exception ex) {}
     }
 
     private void EditFinance(int expenseId)
@@ -175,11 +177,15 @@ else
 
     private async Task DeleteFinance(int expenseId)
     {
+        try
+        {
+            await expenseService.DeleteFinance(expenseId);
 
-
-        await expenseService.DeleteFinance(expenseId);
-
-        await LoadExpenses();
+            await LoadExpenses();
+        }
+        catch (Exception ex)
+        {
+        }
     }
 
     private void GoToAddExpense()
@@ -189,8 +195,15 @@ else
 
     private async Task FilterExpenses()
     {
-        finances = await expenseService.FilterByMonthAndYear(selectedMonth, selectedYear);
+        try
+        {
+            finances = await expenseService.FilterByMonthAndYear(selectedMonth, selectedYear);
+        }
+        catch (Exception ex)
+        {
+        }
     }
+
     private void GoToLogin()
     {
         navigationManager.NavigateTo($"/");

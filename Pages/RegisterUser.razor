@@ -42,22 +42,30 @@
 
     private async void Cadastrar()
     {
-        Authentication Cadastrar = new Authentication
+        if (string.IsNullOrEmpty(nome) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(telefone) || string.IsNullOrEmpty(senha))
         {
-            id = await authService.RetornaId(),
-            user = nome,
-            email = email,
-            phone = telefone,
-            password = senha
-        };
-
-        if (await authService.Cadastrar(Cadastrar))
-        {
-            navigationManager.NavigateTo("/");
+            errorMessage = "Fields cannot be empty";
         }
         else
         {
-            errorMessage = "Check for errors.";
+            Authentication newUser = new Authentication
+            {
+                id = await authService.RetornaId(),
+                user = nome,
+                email = email,
+                phone = telefone,
+                password = senha
+            };
+
+            if (await authService.Cadastrar(newUser))
+            {
+                await authService.SendEmail(newUser, true);
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Check for errors.";
+            }
         }
     }
 

@@ -21,7 +21,7 @@ namespace FinanceControl.Data
         {
             var response =
                 await client.GetAsync(
-                    @$"https://localhost:7289/api/Finance/ListFinances?idUser={_authenticationService._auth.id}");
+                    @$"https://finance-control-api.azurewebsites.net/api/Finance/ListFinances?idUser={_authenticationService._auth.id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -36,7 +36,7 @@ namespace FinanceControl.Data
         public async Task AddFinance(Finance finance)
         {
             finance.userId = _authenticationService._auth.id;
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7289/api/Finance");
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://finance-control-api.azurewebsites.net/api/Finance");
             request.Content = new StringContent(JsonSerializer.Serialize(finance), null, "application/json");
 
             await client.SendAsync(request);
@@ -45,7 +45,7 @@ namespace FinanceControl.Data
         public async Task<int> RetornaId()
         {
             var response = await client.GetAsync(
-                @$"https://localhost:7289/api/Finance/FinanceID");
+                @$"https://finance-control-api.azurewebsites.net/api/Finance/FinanceID");
             return Convert.ToInt32(response.Content.ReadAsStringAsync().Result) + 1;
         }
 
@@ -55,7 +55,7 @@ namespace FinanceControl.Data
             {
                 var response =
                     await client.GetAsync(
-                        @$"https://localhost:7289/api/Finance/ListFinancesByMonth?month={month}&year={year}&id={_authenticationService._auth.id}");
+                        @$"https://finance-control-api.azurewebsites.net/api/Finance/ListFinancesByMonth?month={month}&year={year}&id={_authenticationService._auth.id}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -77,7 +77,7 @@ namespace FinanceControl.Data
         {
             var response =
                 await client.GetAsync(
-                    @$"https://localhost:7289/api/Finance/{id}");
+                    @$"https://finance-control-api.azurewebsites.net/api/Finance/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -95,7 +95,7 @@ namespace FinanceControl.Data
             try
             {
                 updatedFinance.userId = _authenticationService._auth.id;
-                var request = new HttpRequestMessage(HttpMethod.Patch, $"https://localhost:7289/api/Finance/{updatedFinance.id}");
+                var request = new HttpRequestMessage(HttpMethod.Patch, $"https://finance-control-api.azurewebsites.net/api/Finance/{updatedFinance.id}");
                 request.Content = new StringContent(JsonSerializer.Serialize(updatedFinance), null, "application/json");
 
                 await client.SendAsync(request);
@@ -109,7 +109,7 @@ namespace FinanceControl.Data
         {
             var response =
                 await client.DeleteAsync(
-                    @$"https://localhost:7289/api/Finance/{deletedFinance}");
+                    @$"https://finance-control-api.azurewebsites.net/api/Finance/{deletedFinance}");
 
             var a = response.IsSuccessStatusCode;
         }
